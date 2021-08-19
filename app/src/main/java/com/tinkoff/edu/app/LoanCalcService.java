@@ -5,7 +5,7 @@ public class LoanCalcService {
      * TODO Loan calculation
      */
     public static int createRequest() {
-        int localVar = 0;
+        int localVar;
         return LoanCalcRepository.save();
     }
 }

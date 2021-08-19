@@ -10,8 +10,6 @@ public class LoanCalcController {
     public static int createRequest() {
         int localVar;
 
-        //param validation
-        //log request
         LoanCalcLogger.log();
         return LoanCalcService.createRequest();
     }

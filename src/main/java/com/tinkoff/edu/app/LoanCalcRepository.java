@@ -7,7 +7,7 @@ public class LoanCalcRepository {
      * TODO persists request
      * @return RequestId
      */
-    public static int save() {
+    public int save(LoanRequest request) {
         return ++requestId;
     }
 }

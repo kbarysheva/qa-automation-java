@@ -4,7 +4,7 @@ public class LoanCalcLogger {
     /**
      * TODO logs request
      */
-    public static void log() {
-        System.out.println("calling...");
+    public static void log(LoanRequest request) {
+        System.out.println(request);
     }
 }

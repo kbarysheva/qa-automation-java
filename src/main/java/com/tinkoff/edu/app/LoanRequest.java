@@ -14,6 +14,10 @@ public class LoanRequest {
         this.amount = amount;
     }
 
+    public LoanType getType() {
+        return type;
+    }
+
     public int getMonths() {
         return months;
     }

@@ -1,15 +1,16 @@
 package com.tinkoff.edu.app;
 
-import static com.tinkoff.edu.app.LoanCalcLogger.log;
-
 public class LoanCalcController {
+    private PersonLoanCalcService service; // Creator
+
+    public LoanCalcController(LoanCalcRepository repository) {
+        service = new IpNotFriendlyServicePerson(repository);
+    }
+
     /**
      * TODO Validates and logs request
      */
     public int createRequest(LoanRequest request) {
-
-        log(request);
-        LoanCalcService service = new LoanCalcService();
         return service.createRequest(request);
     }
 }

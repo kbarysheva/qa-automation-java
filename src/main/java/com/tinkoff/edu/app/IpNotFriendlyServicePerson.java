@@ -6,8 +6,8 @@ public class IpNotFriendlyServicePerson extends PersonLoanCalcService {
     }
 
     @Override
-    public int createRequest(LoanRequest request) {
-       if (request.getType().equals(LoanType.IP)) return -1;
+    public LoanResponse createRequest(LoanRequest request) {
+       if (request.getType().equals(LoanType.IP)) return new LoanResponse(-1, request, ResponseType.DENIED);
 
         return super.createRequest(request);
     }

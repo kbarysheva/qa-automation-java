@@ -1,16 +1,16 @@
 package com.tinkoff.edu.app;
 
 public class LoanCalcController {
-    private PersonLoanCalcService service; // Creator
+    private LoanCalcService service; // Creator
 
-    public LoanCalcController(LoanCalcRepository repository) {
-        service = new IpNotFriendlyServicePerson(repository);
+    public LoanCalcController(LoanCalcService service) { // Service DI
+        this.service = service;
     }
 
     /**
      * TODO Validates and logs request
      */
-    public int createRequest(LoanRequest request) {
+    public LoanResponse createRequest(LoanRequest request) {
         return service.createRequest(request);
     }
 }

@@ -265,7 +265,17 @@ public class AppTest {
         //endregion
 
         //region Assert / Then
-        assertEquals("Response: {-1,Request: {" + LoanType.PERSON + "," + 10000 + " for " + 13 + "}," + ResponseType.UNKNOWN + "}", loanResponse.toString());
+        String expectedResponseString = "Response: {-1,Request: {"
+                + LoanType.PERSON
+                + ","
+                + 10000
+                + " for "
+                + 13
+                + "},"
+                + ResponseType.UNKNOWN
+                + "}";
+
+        assertEquals(expectedResponseString, loanResponse.toString());
         //endregion
     }
 

@@ -11,18 +11,16 @@ public class AnyTypeLoanCalcService implements LoanCalcService {
      * TODO Loan calculation
      */
     public LoanResponse createRequest(LoanRequest request) {
-        int requestId = repository.save(request);
-
         switch(request.getType()){
             case IP: return new LoanResponse(-1, request, ResponseType.DENIED);
             case OOO:
                 if (request.getAmount() > 10_000 && request.getMonths() < 12) {
-                    return new LoanResponse(requestId, request, ResponseType.APPROVED);
+                    return new LoanResponse(repository.save(request), request, ResponseType.APPROVED);
                 }
                 else return new LoanResponse(-1, request, ResponseType.DENIED);
             case PERSON:
                 if (request.getAmount() <= 10_000 && request.getMonths() <= 12) {
-                    return new LoanResponse(requestId, request, ResponseType.APPROVED);
+                    return new LoanResponse(repository.save(request), request, ResponseType.APPROVED);
                 }
                 else if (request.getAmount() > 10_000 && request.getMonths() > 12) {
                     return new LoanResponse(-1, request, ResponseType.DENIED);

@@ -3,9 +3,11 @@ package com.tinkoff.edu;
 import com.tinkoff.edu.app.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AppTest {
     private LoanRequest request;
@@ -271,7 +273,7 @@ public class AppTest {
                 + 10000
                 + " for "
                 + 13
-                + "},"
+                + ", unknown},"
                 + ResponseType.UNKNOWN
                 + "}";
 
@@ -286,12 +288,223 @@ public class AppTest {
         request = new LoanRequest(LoanType.OOO,18_500, 5);
         //endregion
 
-        //region Act / When
+        //region Assert / Then
+        String expectedResponseString = "Request: {"
+                + LoanType.OOO
+                + ","
+                + 18_500
+                + " for "
+                + 5
+                + ", unknown}";
+        assertEquals(expectedResponseString, request.toString());
+        //endregion
+    }
 
+    @Test
+    @DisplayName("Проверка LoanRequest toString c ФИО")
+    public void shouldGetStringInLoanRequestWithFio() {
+        //region Fixture / Arrange / Given
+        String fio = "Ivanov Ivan Ivanovich";
+        request = new LoanRequest(LoanType.OOO,18_500, 5, fio);
         //endregion
 
         //region Assert / Then
-        assertEquals("Request: {" + LoanType.OOO + "," + 18_500 + " for " + 5 + "}", request.toString());
+        String expectedResponseString = "Request: {"
+                + LoanType.OOO
+                + ","
+                + 18_500
+                + " for "
+                + 5
+                + ", "
+                + fio
+                + "}";
+        assertEquals(expectedResponseString, request.toString());
         //endregion
     }
+
+    @Test
+    @DisplayName("Проверка возвращаемого типа UUID")
+    public void shouldGetUUID() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
+        UUID uuid = UUID.randomUUID();
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertEquals(uuid.getClass(), loanResponse.getRequestId().getClass());
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка сохранения response в массив")
+    public void shouldSaveInArray() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertNotEquals(null, array[0]);
+        assertNotEquals(null, array[1]);
+        assertNull(array[2]);
+        //endregion
+
+    }
+
+    @Test
+    @DisplayName("Проверка не сохранения IP в массив")
+    public void shouldNotSaveInArray() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.IP,18_500, 5);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertNull(array[0]);
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения статуса заявки по UUID")
+    public void shouldGetStatusForUUID() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        Object uuid = array[0].getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(ResponseType.APPROVED, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения статуса заявки по несуществующему UUID")
+    public void shouldGetStatusForNonExistentUUID() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        Object uuid = UUID.randomUUID();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(ResponseType.UNKNOWN, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения статуса заявки по несуществующему UUID при полном заполнении массива")
+    public void shouldGetStatusForNonExistentUUIDInFullArray() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        for (int i = 0; i < array.length; i++) {
+            sut.createRequest(request);
+        }
+        Object uuid = UUID.randomUUID();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(ResponseType.UNKNOWN, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка успешного изменения заявки")
+    public void shouldSuccessUpdateResponseType() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        Object uuid = array[0].getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertTrue(repo.setStatusByUUID(uuid, ResponseType.DENIED));
+        assertEquals(ResponseType.DENIED, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка неуспешного обновления заявки при несуществующем UUID")
+    public void shouldFailUpdateResponseType() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        Object uuid = UUID.randomUUID();
+        //endregion
+
+        //region Assert / Then
+        assertFalse(repo.setStatusByUUID(uuid, ResponseType.APPROVED));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка неуспешного обновления заявки при несуществующем UUID при полном заполнении массива")
+    public void shouldFailUpdateResponseTypeInFullArray() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,10_000, 12);
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        LoanResponse[] array = repo.getResponseArray();
+        //endregion
+
+        //region Act / When
+        for (int i = 0; i < array.length; i++) {
+            sut.createRequest(request);
+        }
+        Object uuid = UUID.randomUUID();
+        //endregion
+
+        //region Assert / Then
+        assertFalse(repo.setStatusByUUID(uuid, ResponseType.APPROVED));
+        //endregion
+    }
+
 }

@@ -8,7 +8,7 @@ public class LoanRequest {
     private final int months;
     private final int amount;
 
-    public LoanRequest(LoanType type, int months, int amount) {
+    public LoanRequest(LoanType type, int amount, int months) {
         this.type = type;
         this.months = months;
         this.amount = amount;

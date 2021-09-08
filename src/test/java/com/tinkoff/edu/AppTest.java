@@ -548,6 +548,7 @@ public class AppTest {
         //region Fixture / Arrange / Given
         String fio = "Ivan Ivanovich Ivanov";
         request = new LoanRequest(LoanType.UNKNOWN,10_000, 12, fio);
+        //endregion
 
         //region Assert / Then
         assertEquals(fio, request.getFio());

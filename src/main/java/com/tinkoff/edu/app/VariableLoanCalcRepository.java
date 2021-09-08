@@ -17,6 +17,7 @@ public class VariableLoanCalcRepository implements LoanCalcRepository{
      */
     @Override
     public Integer save(LoanRequest request) {
+        if (request == null) throw new IllegalArgumentException();
         return ++requestId;
     }
 }

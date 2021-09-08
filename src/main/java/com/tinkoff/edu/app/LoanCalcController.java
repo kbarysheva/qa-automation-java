@@ -11,6 +11,7 @@ public class LoanCalcController {
      * TODO Validates and logs request
      */
     public LoanResponse createRequest(LoanRequest request) {
+        if (request == null) throw new IllegalArgumentException();
         return service.createRequest(request);
     }
 }

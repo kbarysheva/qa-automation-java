@@ -239,10 +239,27 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка ResponseType UNKNOWN")
+    @DisplayName("Проверка ResponseType UNKNOWN, когда LoanType PERSON Amount = 10_000 months > 12")
     public void shouldGetUnknownInCornerCase() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.PERSON,10_000, 13);
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertEquals(-1 ,loanResponse.getRequestId());
+        assertEquals(ResponseType.UNKNOWN, loanResponse.getResponseType());
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка ResponseType UNKNOWN, когда LoanType PERSON Amount > 10_000 Months < 12")
+    public void shouldGetUnknownInCornerCase2() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.PERSON,13_000, 10);
         //endregion
 
         //region Act / When
@@ -507,4 +524,33 @@ public class AppTest {
         //endregion
     }
 
+    @Test
+    @DisplayName("Проверка получения статуса UNKNOWN, когда LoanType UNKNOWN")
+    public void shouldGetUnknownWhereLoanTypeUnknown() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.UNKNOWN,10_000, 12);
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
+
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertEquals(ResponseType.UNKNOWN, loanResponse.getResponseType());
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения ФИО")
+    public void shouldGetFio() {
+        //region Fixture / Arrange / Given
+        String fio = "Ivan Ivanovich Ivanov";
+        request = new LoanRequest(LoanType.UNKNOWN,10_000, 12, fio);
+
+        //region Assert / Then
+        assertEquals(fio, request.getFio());
+        //endregion
+    }
 }

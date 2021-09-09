@@ -13,6 +13,7 @@ public class ArrayLoanCalcRepository implements LoanCalcRepository{
     int responseArrayPosition = 0;
 
     public ResponseType getStatusByUUID (Object uuid) {
+        if (uuid == null) throw new IllegalArgumentException();
         for (int i = 0; i < responseArray.length; i++) {
             if (responseArray[i]==null) return ResponseType.UNKNOWN;
             if (responseArray[i].getRequestId().equals(uuid)) {
@@ -23,6 +24,7 @@ public class ArrayLoanCalcRepository implements LoanCalcRepository{
     }
 
     public boolean setStatusByUUID (Object uuid, ResponseType responseType) {
+        if (uuid == null || responseType == null) throw new IllegalArgumentException();
         for (int i = 0; i < responseArray.length; i++) {
             if (responseArray[i]==null) return false;
             if (responseArray[i].getRequestId().equals(uuid)) {
@@ -35,6 +37,7 @@ public class ArrayLoanCalcRepository implements LoanCalcRepository{
 
     @Override
     public UUID save(LoanRequest request) {
+        if (request == null) throw new IllegalArgumentException();
         UUID uuid = UUID.randomUUID();
         responseArray[responseArrayPosition++] = new LoanResponse(uuid,request,ResponseType.APPROVED);
         return uuid;

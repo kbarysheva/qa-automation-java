@@ -13,7 +13,7 @@ public class LoanRequest {
         this.type = type;
         this.months = months;
         this.amount = amount;
-        this.fio = "unknown";
+        this.fio = "unknown-unknown";
     }
 
     public LoanRequest(LoanType type, int amount, int months, String fio) {

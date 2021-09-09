@@ -290,7 +290,7 @@ public class AppTest {
                 + 10000
                 + " for "
                 + 13
-                + ", unknown},"
+                + ", unknown-unknown},"
                 + ResponseType.UNKNOWN
                 + "}";
 
@@ -312,7 +312,7 @@ public class AppTest {
                 + 18_500
                 + " for "
                 + 5
-                + ", unknown}";
+                + ", unknown-unknown}";
         assertEquals(expectedResponseString, request.toString());
         //endregion
     }
@@ -321,7 +321,7 @@ public class AppTest {
     @DisplayName("Проверка LoanRequest toString c ФИО")
     public void shouldGetStringInLoanRequestWithFio() {
         //region Fixture / Arrange / Given
-        String fio = "Ivanov Ivan Ivanovich";
+        String fio = "Ivanov-Ivan-Ivanovich";
         request = new LoanRequest(LoanType.OOO,18_500, 5, fio);
         //endregion
 
@@ -530,7 +530,6 @@ public class AppTest {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.UNKNOWN,10_000, 12);
         sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
-
         //endregion
 
         //region Act / When
@@ -546,12 +545,163 @@ public class AppTest {
     @DisplayName("Проверка получения ФИО")
     public void shouldGetFio() {
         //region Fixture / Arrange / Given
-        String fio = "Ivan Ivanovich Ivanov";
+        String fio = "Ivan-Ivanovich-Ivanov";
         request = new LoanRequest(LoanType.UNKNOWN,10_000, 12, fio);
         //endregion
 
         //region Assert / Then
         assertEquals(fio, request.getFio());
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request == null в LoanCalcController createRequest")
+    public void shouldGetIAExceptionFromNullInLoanCalcController() {
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> sut.createRequest(null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request == null в IpNotFriendlyServicePerson")
+    public void shouldGetIAExceptionFromNullInIpNotFriendlyServicePerson() {
+        //region Fixture / Arrange / Given
+        IpNotFriendlyServicePerson service = new IpNotFriendlyServicePerson(new VariableLoanCalcRepository());
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createRequest(null));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request == null в AnyTypeLoanCalcService")
+    public void shouldGetIAExceptionFromNullInAnyTypeLoanCalcService() {
+        //region Fixture / Arrange / Given
+        AnyTypeLoanCalcService service = new AnyTypeLoanCalcService(new VariableLoanCalcRepository());
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createRequest(null));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request == null в ArrayLoanCalcRepository save")
+    public void shouldGetIAExceptionFromNullInArrayLoanCalcRepositorySave() {
+        //region Fixture / Arrange / Given
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.save(null));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при uuid == null в ArrayLoanCalcRepository getStatusByUUID")
+    public void shouldGetIAExceptionFromNullInArrayLoanCalcRepositoryGetStatusByUUID() {
+        //region Fixture / Arrange / Given
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.getStatusByUUID(null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при uuid == null в ArrayLoanCalcRepository setStatusByUUID")
+    public void shouldGetIAExceptionFromNullUUIDInArrayLoanCalcRepositorySetStatusByUUID() {
+        //region Fixture / Arrange / Given
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.setStatusByUUID(null, ResponseType.APPROVED));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при responseType == null в ArrayLoanCalcRepository setStatusByUUID")
+    public void shouldGetIAExceptionFromNullResponseTypeInArrayLoanCalcRepositorySetStatusByUUID() {
+        //region Fixture / Arrange / Given
+        ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.setStatusByUUID(UUID.randomUUID(), null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request == null в VariableLoanCalcRepository save")
+    public void shouldGetIAExceptionFromNullInVariableLoanCalcRepositorySave() {
+        //region Fixture / Arrange / Given
+        VariableLoanCalcRepository repo = new VariableLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.save(null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при Большом ФИО в LoanCalcController createRequest")
+    public void shouldGetIAExceptionFromBigFIOInLoanCalcController() {
+        //region Fixture / Arrange / Given
+        String bigFio = "IvanIvanovichIvanovIvanIvanovichIvanovIvanIvanovichIvanovIvanIvanovichIvanovIvanIvanovichIvanovIvanIvanovichIvanov";
+        request = new LoanRequest(LoanType.PERSON,10_000, 12, bigFio);
+        //endregion
+
+        //region Act / When
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> sut.createRequest(request));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при Маленьком ФИО в LoanCalcController createRequest")
+    public void shouldGetIAExceptionFromSmallFIOInLoanCalcController() {
+        //region Fixture / Arrange / Given
+        String smallFio = "Ivanovich";
+        request = new LoanRequest(LoanType.PERSON,10_000, 12, smallFio);
+        //endregion
+
+        //region Act / When
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> sut.createRequest(request));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при лишних символах в LoanCalcController createRequest")
+    public void shouldGetIAExceptionFromWrongSymbolsInLoanCalcController() {
+        //region Fixture / Arrange / Given
+        String wrongFio = "Ivan*Иvanovich";
+        request = new LoanRequest(LoanType.PERSON,10_000, 12, wrongFio);
+        //endregion
+
+        //region Act / When
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(new ArrayLoanCalcRepository()));
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> sut.createRequest(request));
         //endregion
     }
 }

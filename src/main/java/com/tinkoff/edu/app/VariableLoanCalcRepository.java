@@ -16,7 +16,7 @@ public class VariableLoanCalcRepository implements LoanCalcRepository{
      * @return RequestId
      */
     @Override
-    public int save(LoanRequest request) {
+    public Integer save(LoanRequest request) {
         return ++requestId;
     }
 }

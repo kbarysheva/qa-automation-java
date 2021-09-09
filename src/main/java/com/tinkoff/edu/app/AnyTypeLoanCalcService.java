@@ -11,21 +11,22 @@ public class AnyTypeLoanCalcService implements LoanCalcService {
      * TODO Loan calculation
      */
     public LoanResponse createRequest(LoanRequest request) {
-        int requestId = repository.save(request);
-        boolean case1 = request.getType().equals(LoanType.PERSON) && request.getAmount() <= 10_000 && request.getMonths() <= 12;
-        boolean case2 = request.getType().equals(LoanType.OOO) && request.getAmount() > 10_000 && request.getMonths() < 12;
-        boolean case3 = request.getType().equals(LoanType.IP);
-        boolean case4 = request.getType().equals(LoanType.PERSON) && request.getAmount() > 10_000 && request.getMonths() > 12;
-        boolean case5 = request.getType().equals(LoanType.OOO) && request.getAmount() <= 10_000;
-        boolean case6 = request.getType().equals(LoanType.OOO) && request.getAmount() > 10_000 && request.getMonths() >= 12;
-
-        if (case1 || case2) {
-            return new LoanResponse(requestId, request, ResponseType.APPROVED);
+        switch(request.getType()){
+            case IP: return new LoanResponse(-1, request, ResponseType.DENIED);
+            case OOO:
+                if (request.getAmount() > 10_000 && request.getMonths() < 12) {
+                    return new LoanResponse(repository.save(request), request, ResponseType.APPROVED);
+                }
+                else return new LoanResponse(-1, request, ResponseType.DENIED);
+            case PERSON:
+                if (request.getAmount() <= 10_000 && request.getMonths() <= 12) {
+                    return new LoanResponse(repository.save(request), request, ResponseType.APPROVED);
+                }
+                else if (request.getAmount() > 10_000 && request.getMonths() > 12) {
+                    return new LoanResponse(-1, request, ResponseType.DENIED);
+                }
+                else return new LoanResponse(-1, request,ResponseType.UNKNOWN);
+            default: return new LoanResponse(-1, request,ResponseType.UNKNOWN);
         }
-        else if (case3 || case4 || case5 || case6) {
-            return new LoanResponse(-1, request, ResponseType.DENIED);
-        }
-        else
-            return new LoanResponse(-1, request,ResponseType.UNKNOWN);
     }
 }

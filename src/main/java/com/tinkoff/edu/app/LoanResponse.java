@@ -1,11 +1,11 @@
 package com.tinkoff.edu.app;
 
 public class LoanResponse {
-    private final int requestId;
+    private final Object requestId;
     private final LoanRequest request;
-    private final ResponseType responseType;
+    private ResponseType responseType;
 
-    public LoanResponse(int requestId, LoanRequest request, ResponseType responseType){
+    public LoanResponse(Object requestId, LoanRequest request, ResponseType responseType){
         this.requestId = requestId;
         this.request = request;
         this.responseType = responseType;
@@ -14,7 +14,11 @@ public class LoanResponse {
     public ResponseType getResponseType() {
         return responseType;
     }
-    public int getRequestId() {
+    public void setResponseType(ResponseType responseType) {
+        this.responseType = responseType;
+    }
+
+    public Object getRequestId() {
         return requestId;
     }
     public LoanRequest getRequest() {

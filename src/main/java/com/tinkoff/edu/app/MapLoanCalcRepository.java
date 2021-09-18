@@ -1,8 +1,10 @@
 package com.tinkoff.edu.app;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MapLoanCalcRepository implements LoanCalcRepository {
 
@@ -17,6 +19,14 @@ public class MapLoanCalcRepository implements LoanCalcRepository {
         LoanResponse response = responseMap.get(uuid);
         if (response == null) return ResponseType.UNKNOWN;
         return response.getResponseType();
+    }
+
+    public LoanResponse[] getLoanRequestsByLoanType(LoanType loanType) {
+        Collection<LoanResponse> values = responseMap.values();
+
+        return values.stream()
+                .filter(e -> e.getRequest().getType() == loanType)
+                .toArray(LoanResponse[]::new);
     }
 
     public boolean setStatusByUUID(Object uuid, ResponseType responseType){

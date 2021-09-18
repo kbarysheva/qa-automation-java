@@ -836,4 +836,42 @@ public class AppTest {
                 () -> repo.save(null));
         //endregion
     }
+
+    @Test
+    @DisplayName("Проверка нахождения заявок по LoanType")
+    public void shouldGetResponsesForLoanType() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        //assertEquals(loanResponse, repo.getLoanRequestsByLoanType(LoanType.OOO));
+        assertThat(repo.getLoanRequestsByLoanType(LoanType.OOO), arrayContaining(loanResponse));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка ненахождения заявок по LoanType")
+    public void shouldNotGetResponsesForLoanType() {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        //assertEquals(loanResponse, repo.getLoanRequestsByLoanType(LoanType.OOO));
+        assertThat(repo.getLoanRequestsByLoanType(LoanType.IP), emptyArray());
+        //endregion
+    }
 }

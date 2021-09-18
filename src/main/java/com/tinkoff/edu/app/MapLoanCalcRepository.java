@@ -14,7 +14,9 @@ public class MapLoanCalcRepository implements LoanCalcRepository {
 
     public ResponseType getStatusByUUID (Object uuid){
         if (uuid == null) throw new IllegalArgumentException();
-        return responseMap.get(uuid).getResponseType();
+        LoanResponse response = responseMap.get(uuid);
+        if (response == null) return ResponseType.UNKNOWN;
+        return response.getResponseType();
     }
 
     public boolean setStatusByUUID(Object uuid, ResponseType responseType){

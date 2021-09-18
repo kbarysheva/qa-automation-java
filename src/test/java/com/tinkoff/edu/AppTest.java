@@ -3,11 +3,15 @@ package com.tinkoff.edu;
 import com.tinkoff.edu.app.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+
+import static org.hamcrest.Matchers.*;
 
 public class AppTest {
     private LoanRequest request;
@@ -340,7 +344,7 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка возвращаемого типа UUID")
+    @DisplayName("Проверка возвращаемого типа UUID с ArrayLoanCalcRepository")
     public void shouldGetUUID() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.OOO,18_500, 5);
@@ -358,7 +362,7 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка сохранения response в массив")
+    @DisplayName("Проверка сохранения response в массив с ArrayLoanCalcRepository")
     public void shouldSaveInArray() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.OOO,18_500, 5);
@@ -400,7 +404,7 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка получения статуса заявки по UUID")
+    @DisplayName("Проверка получения статуса заявки по UUID с ArrayLoanCalcRepository")
     public void shouldGetStatusForUUID() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.PERSON,10_000, 12);
@@ -420,13 +424,12 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка получения статуса заявки по несуществующему UUID")
+    @DisplayName("Проверка получения статуса заявки по несуществующему UUID с ArrayLoanCalcRepository")
     public void shouldGetStatusForNonExistentUUID() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.PERSON,10_000, 12);
         ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
         sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
-        LoanResponse[] array = repo.getResponseArray();
         //endregion
 
         //region Act / When
@@ -462,7 +465,7 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка успешного изменения заявки")
+    @DisplayName("Проверка успешного изменения заявки с ArrayLoanCalcRepository")
     public void shouldSuccessUpdateResponseType() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.PERSON,10_000, 12);
@@ -483,13 +486,12 @@ public class AppTest {
     }
 
     @Test
-    @DisplayName("Проверка неуспешного обновления заявки при несуществующем UUID")
+    @DisplayName("Проверка неуспешного обновления заявки при несуществующем UUID с ArrayLoanCalcRepository")
     public void shouldFailUpdateResponseType() {
         //region Fixture / Arrange / Given
         request = new LoanRequest(LoanType.PERSON,10_000, 12);
         ArrayLoanCalcRepository repo = new ArrayLoanCalcRepository();
         sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
-        LoanResponse[] array = repo.getResponseArray();
         //endregion
 
         //region Act / When
@@ -702,6 +704,136 @@ public class AppTest {
         //region Assert / Then
         assertThrows(IllegalArgumentException.class,
                 () -> sut.createRequest(request));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка сохранения response в Map")
+    public void shouldGetSaveInMap(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        Map<UUID, LoanResponse> responseMap = repo.getResponseMap();
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertThat(responseMap, not(anEmptyMap()));
+        assertThat(responseMap, is(aMapWithSize(1)));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения статуса заявки по UUID с MapLoanCalcRepository")
+    public void shouldGetStatusByUUIDWithMapLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(loanResponse.getResponseType(), repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения статуса заявки по несуществующему UUID с MapLoanCalcRepository")
+    public void shouldGetStatusByUnknownUUIDWithMapLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        Object uuid = UUID.randomUUID();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(ResponseType.UNKNOWN, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка успешного изменения заявки с MapLoanCalcRepository")
+    public void shouldSuccessChangeStatusWithMapLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertTrue(repo.setStatusByUUID(uuid, ResponseType.DENIED));
+        assertEquals(ResponseType.DENIED, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при uuid = null в MapLoanCalcRepository getStatusByUUID")
+    public void shouldGetIAExceptionFromNullUUIDInMapLoanCalcRepositoryGetStatusByUUID() {
+        //region Fixture / Arrange / Given
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.getStatusByUUID(null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при uuid = null в MapLoanCalcRepository setStatusByUUID")
+    public void shouldGetIAExceptionFromNullUUIDInMapLoanCalcRepositorySetStatusByUUID(){
+        //region Fixture / Arrange / Given
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.setStatusByUUID(null, ResponseType.APPROVED));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при responseType = null в MapLoanCalcRepository setStatusByUUID")
+    public void shouldGetIAExceptionFromNullResponseTypeInMapLoanCalcRepositorySetStatusByUUID(){
+        //region Fixture / Arrange / Given
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.setStatusByUUID(UUID.randomUUID(), null));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка IllegalArgumentException при request = null в MapLoanCalcRepository save")
+    public void shouldGetIAExceptionFromNullRequestInMapLoanCalcRepositorySave() {
+        //region Fixture / Arrange / Given
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        //endregion
+
+        //region Assert / Then
+        assertThrows(IllegalArgumentException.class,
+                () -> repo.save(null));
         //endregion
     }
 }

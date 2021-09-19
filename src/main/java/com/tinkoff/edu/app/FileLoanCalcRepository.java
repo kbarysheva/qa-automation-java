@@ -15,10 +15,10 @@ public class FileLoanCalcRepository implements LoanCalcRepository {
     public ResponseType getStatusByUUID (Object uuid) {
         if (uuid == null) throw new IllegalArgumentException();
         try {
-            final List<String> strings = Files.readAllLines(path);
-            for (String string : strings) {
-                if (string.contains(uuid.toString())) {
-                    String[] responseParts = string.split(";");
+            final List<String> fileLines = Files.readAllLines(path);
+            for (String line : fileLines) {
+                if (line.contains(uuid.toString())) {
+                    String[] responseParts = line.split(";");
                     return ResponseType.valueOf(responseParts[responseParts.length - 1].replaceAll("\\s+", ""));
                 }
             }
@@ -31,7 +31,22 @@ public class FileLoanCalcRepository implements LoanCalcRepository {
 
     public boolean setStatusByUUID (Object uuid, ResponseType responseType) {
         if (uuid == null || responseType == null) throw new IllegalArgumentException();
-
+        try {
+            final List<String> fileLines = Files.readAllLines(path);
+            for (int i = 0; i < fileLines.size(); i++) {
+                if (fileLines.get(i).contains(uuid.toString())) {
+                    String[] responseParts = fileLines.get(i).split(";");
+                    responseParts[responseParts.length -1] = " " + responseType.toString();
+                    String newLine = String.join(";", responseParts);
+                    fileLines.set(i, newLine);
+                    Files.write(path, fileLines, WRITE);
+                    return true;
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+            return false;
+        }
         return false;
     }
 

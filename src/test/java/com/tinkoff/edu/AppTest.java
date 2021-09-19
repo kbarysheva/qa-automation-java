@@ -911,4 +911,23 @@ public class AppTest {
         assertEquals(loanResponse.getResponseType(), repo.getStatusByUUID(uuid));
         //endregion
     }
+    @Test
+    @DisplayName("Проверка успешного изменения заявки с FileLoanCalcRepository")
+    public void shouldSuccessChangeStatusWithFileLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        FileLoanCalcRepository repo = new FileLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertTrue(repo.setStatusByUUID(uuid, ResponseType.DENIED));
+        assertEquals(ResponseType.DENIED, repo.getStatusByUUID(uuid));
+        //endregion
+    }
 }

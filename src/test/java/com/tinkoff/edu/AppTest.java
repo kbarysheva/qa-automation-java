@@ -890,7 +890,25 @@ public class AppTest {
         //region Assert / Then
         Path path = Path.of("LoanCalcRepository.csv");
         final List<String> strings = Files.readAllLines(path);
-        assertThat(strings, hasItem(uuid.toString() + ", " + request.toString() + ", " + ResponseType.APPROVED));
+        assertThat(strings, hasItem(uuid.toString() + "; " + request.toString() + "; " + ResponseType.APPROVED));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка получения статуса заявки по UUID с FileLoanCalcRepository")
+    public void shouldGetStatusByUUIDWithFileLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        FileLoanCalcRepository repo = new FileLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(loanResponse.getResponseType(), repo.getStatusByUUID(uuid));
         //endregion
     }
 }

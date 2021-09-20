@@ -930,4 +930,24 @@ public class AppTest {
         assertEquals(ResponseType.DENIED, repo.getStatusByUUID(uuid));
         //endregion
     }
+
+    @Test
+    @DisplayName("Проверка получения суммы amount по LoanType")
+    public void shouldGetSumAmountByLoanType(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        sut.createRequest(request);
+        sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertEquals(request.getAmount()*3, repo.getSumByLoanType(LoanType.OOO));
+        //endregion
+    }
 }

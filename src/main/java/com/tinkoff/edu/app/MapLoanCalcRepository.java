@@ -29,6 +29,13 @@ public class MapLoanCalcRepository implements LoanCalcRepository {
                 .toArray(LoanResponse[]::new);
     }
 
+    public Integer getSumByLoanType(LoanType loanType) {
+        if (loanType == null) throw new IllegalArgumentException();
+        Collection<LoanResponse> values = responseMap.values();
+        return values.stream()
+                .map(e -> e.getRequest().getAmount()).reduce(0, (x, y) -> x + y);
+    }
+
     public boolean setStatusByUUID(Object uuid, ResponseType responseType){
         if (uuid == null || responseType == null) throw new IllegalArgumentException();
         LoanResponse loanResponse = responseMap.get(uuid);

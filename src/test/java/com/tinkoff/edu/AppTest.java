@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -851,7 +855,6 @@ public class AppTest {
         //endregion
 
         //region Assert / Then
-        //assertEquals(loanResponse, repo.getLoanRequestsByLoanType(LoanType.OOO));
         assertThat(repo.getLoanRequestsByLoanType(LoanType.OOO), arrayContaining(loanResponse));
         //endregion
     }
@@ -865,13 +868,86 @@ public class AppTest {
         sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
         //endregion
 
+        //region Assert / Then
+        assertThat(repo.getLoanRequestsByLoanType(LoanType.IP), emptyArray());
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка сохранения response в File")
+    public void shouldSuccessSaveForFileLoanCalcRepository() throws IOException {
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        FileLoanCalcRepository repo = new FileLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
         //region Act / When
         LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
         //endregion
 
         //region Assert / Then
-        //assertEquals(loanResponse, repo.getLoanRequestsByLoanType(LoanType.OOO));
-        assertThat(repo.getLoanRequestsByLoanType(LoanType.IP), emptyArray());
+        Path path = Path.of("LoanCalcRepository.csv");
+        final List<String> strings = Files.readAllLines(path);
+        assertThat(strings, hasItem(uuid.toString() + "; " + request.toString() + "; " + ResponseType.APPROVED));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка получения статуса заявки по UUID с FileLoanCalcRepository")
+    public void shouldGetStatusByUUIDWithFileLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        FileLoanCalcRepository repo = new FileLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertEquals(loanResponse.getResponseType(), repo.getStatusByUUID(uuid));
+        //endregion
+    }
+    @Test
+    @DisplayName("Проверка успешного изменения заявки с FileLoanCalcRepository")
+    public void shouldSuccessChangeStatusWithFileLoanCalcRepository(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        FileLoanCalcRepository repo = new FileLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        LoanResponse loanResponse = sut.createRequest(request);
+        Object uuid = loanResponse.getRequestId();
+        //endregion
+
+        //region Assert / Then
+        assertTrue(repo.setStatusByUUID(uuid, ResponseType.DENIED));
+        assertEquals(ResponseType.DENIED, repo.getStatusByUUID(uuid));
+        //endregion
+    }
+
+    @Test
+    @DisplayName("Проверка получения суммы amount по LoanType")
+    public void shouldGetSumAmountByLoanType(){
+        //region Fixture / Arrange / Given
+        request = new LoanRequest(LoanType.OOO,18_500, 5);
+        MapLoanCalcRepository repo = new MapLoanCalcRepository();
+        sut = new LoanCalcController(new AnyTypeLoanCalcService(repo));
+        //endregion
+
+        //region Act / When
+        sut.createRequest(request);
+        sut.createRequest(request);
+        sut.createRequest(request);
+        //endregion
+
+        //region Assert / Then
+        assertEquals(request.getAmount()*3, repo.getSumByLoanType(LoanType.OOO));
         //endregion
     }
 }

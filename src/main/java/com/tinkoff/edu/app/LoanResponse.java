@@ -1,5 +1,7 @@
 package com.tinkoff.edu.app;
 
+import java.util.Objects;
+
 public class LoanResponse {
     private final Object requestId;
     private final LoanRequest request;
@@ -31,4 +33,15 @@ public class LoanResponse {
                 + this.getResponseType() +
                 "}";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LoanResponse that = (LoanResponse) o;
+        return Objects.equals(requestId, that.requestId) &&
+                Objects.equals(request, that.request) &&
+                responseType == that.responseType;
+    }
+
 }

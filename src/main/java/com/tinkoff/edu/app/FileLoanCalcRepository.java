@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -33,19 +34,19 @@ public class FileLoanCalcRepository implements LoanCalcRepository {
         if (uuid == null || responseType == null) throw new IllegalArgumentException();
         try {
             final List<String> fileLines = Files.readAllLines(path);
-            for (int i = 0; i < fileLines.size(); i++) {
-                if (fileLines.get(i).contains(uuid.toString())) {
-                    String[] responseParts = fileLines.get(i).split(";");
-                    responseParts[responseParts.length -1] = " " + responseType.toString();
-                    String newLine = String.join(";", responseParts);
-                    fileLines.set(i, newLine);
-                    Files.write(path, fileLines, WRITE);
-                    return true;
-                }
-            }
+            final List<String> newLines = fileLines.stream()
+                    .filter(e -> e.contains(uuid.toString()))
+                    .map(e -> {
+                        String[] responseParts = e.split(";");
+                        responseParts[responseParts.length -1] = " " + responseType.toString();
+                        String newLine = String.join(";", responseParts);
+                        return newLine;
+                    })
+                    .collect(Collectors.toList());
+            Files.write(path, newLines, WRITE);
+            return true;
         } catch (IOException e){
             e.printStackTrace();
-            return false;
         }
         return false;
     }

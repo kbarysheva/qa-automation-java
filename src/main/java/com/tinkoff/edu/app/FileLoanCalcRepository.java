@@ -33,14 +33,12 @@ public class FileLoanCalcRepository implements LoanCalcRepository {
     public boolean setStatusByUUID (Object uuid, ResponseType responseType) {
         if (uuid == null || responseType == null) throw new IllegalArgumentException();
         try {
-            final List<String> fileLines = Files.readAllLines(path);
-            final List<String> newLines = fileLines.stream()
+            final List<String> newLines = Files.readAllLines(path).stream()
                     .filter(e -> e.contains(uuid.toString()))
                     .map(e -> {
                         String[] responseParts = e.split(";");
                         responseParts[responseParts.length -1] = " " + responseType.toString();
-                        String newLine = String.join(";", responseParts);
-                        return newLine;
+                        return String.join(";", responseParts);
                     })
                     .collect(Collectors.toList());
             Files.write(path, newLines, WRITE);
